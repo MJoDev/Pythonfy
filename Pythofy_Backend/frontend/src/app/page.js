@@ -13,12 +13,12 @@ const FolderSelector = () => {
     <div className="min-h-screen bg-zinc-900 text-white">
           <div className="flex">
             <Sidebar />
-            <div className="flex-1">
+            <div className="flex-1 ml-60">
               <SearchBar />
               <LibraryTable/>
             </div>
           </div>
-          <PlayerControls playerData={playerData} />
+          <PlayerControls />
     </div>
   );
 };

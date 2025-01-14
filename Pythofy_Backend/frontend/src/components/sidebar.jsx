@@ -2,17 +2,15 @@ import { Home, Search, FolderPlus, Music, Download, List } from 'lucide-react'
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { Heading } from "@/components/ui/heading"
-import React, { useState } from 'react'
+import React, { useRef, useState } from 'react'
 import { useSongContext } from '@/components/providers/songcontext'
-interface SidebarProps extends React.HTMLAttributes<HTMLDivElement> {}
 
-export function Sidebar({ className }: SidebarProps) {
+export function Sidebar({ className }) {
   const { songs, setSongs, folderPath, setFolderPath } = useSongContext();
-  const handleFolderSelection = async () => {
+  const fileInputRef = useRef(null);
+  const handleFolderSelection = async (event) => {
     const path = window.prompt('Enter the folder path:');
     if (!path) return;
-    console.log(path)
-    console.log(process.env.NEXT_PUBLIC_BACKEND_URL)
     setFolderPath(path);
 
     try {
@@ -33,9 +31,14 @@ export function Sidebar({ className }: SidebarProps) {
     }
   };
 
+  const triggerFileInput = () => {
+    if (fileInputRef.current) {
+      fileInputRef.current.click(); // Dispara el clic en el input invisible
+    }
+  };
 
   return (
-    <div className={cn("pb-12 w-60 bg-black", className)}>
+    <div className={cn("pb-12 w-60 min-h-screen bg-black fixed", className)}>
       <div className="space-y-4 py-4">
         <div className="px-3 py-2">
           <Heading className="mb-2 px-4">Menú</Heading>
@@ -53,7 +56,17 @@ export function Sidebar({ className }: SidebarProps) {
         <div className="px-3 py-2">
           <Heading className="mb-2 px-4">Carpetas</Heading>
           <div className="space-y-1">
-            <Button variant="ghost" className="w-full justify-start" onClick={handleFolderSelection}>
+            <Button variant="ghost" className="w-full justify-start" onClick={triggerFileInput}>
+            <input
+                  type="file"
+                  ref={fileInputRef}
+                  onChange={handleFolderSelection}
+                  style={{ display: 'none' }} // Lo ocultamos visualmente
+                  onClick={(e) => e.stopPropagation()} // Previene la propagación del click al body
+                  // Cast a cualquier HTMLInputElement que permita webkitdirectory
+                  webkitdirectory = "true"
+                />
+
               <FolderPlus className="mr-2 h-4 w-4" />
               Agregar Ruta
             </Button>

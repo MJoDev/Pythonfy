@@ -20,7 +20,7 @@ export function LibraryTable() {
     const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/play`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ song_path: `${folderPath}/${song}` }),
+      body: JSON.stringify({ song_path: `${folderPath}/${song.filename}` }),
     });
     const data = await response.json();
     if (data.duration) {
@@ -47,21 +47,30 @@ export function LibraryTable() {
         <TableBody>
           {songs.map((song, index) => (
             <TableRow key={index}>
-              <TableCell>{index}</TableCell>
+              <TableCell>{index + 1}</TableCell>
               <TableCell><button>
                 <Play className="h-5 w-5 transition-opacity hover:opacity-50" onClick={() => handlePlaySong(song)}></Play>
                 </button></TableCell>
               <TableCell className="flex items-center gap-3">
-                <img
-                  src="./placeholder.png"
-                  alt={song}
+                {song.cover ? (
+                  <img
+                  src={song.cover}
+                  alt={song.title}
                   className="h-10 w-10 rounded"
                 />
-                {song}
+                ) : (
+                  <img
+                  src="./placeholder.png"
+                  alt={song.title}
+                  className="h-10 w-10 rounded"
+                />
+                )}
+                
+                {song.title}
               </TableCell>
-              <TableCell>Unknown Artist</TableCell>
-              <TableCell>Unknown Album</TableCell>
-              <TableCell className="text-right">Unknown duration</TableCell>
+              <TableCell>{song.artist}</TableCell>
+              <TableCell>{song.album}</TableCell>
+              <TableCell className="text-right">{song.duration ? `${Math.floor(song.duration / 60)}:${(song.duration % 60).toFixed(0).padStart(2, '0')}` : 'Unknown'}</TableCell>
             </TableRow>
           ))}
         </TableBody>

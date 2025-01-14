@@ -34,4 +34,6 @@ def resume_song():
 
 def get_progress():
     global current_time, song_duration
+    if is_playing:
+        current_time += 1  
     return {"current_time": current_time, "duration": song_duration}
