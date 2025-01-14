@@ -2,10 +2,38 @@ import { Home, Search, FolderPlus, Music, Download, List } from 'lucide-react'
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { Heading } from "@/components/ui/heading"
-import React from 'react'
+import React, { useState } from 'react'
+import { useSongContext } from '@/components/providers/songcontext'
 interface SidebarProps extends React.HTMLAttributes<HTMLDivElement> {}
 
 export function Sidebar({ className }: SidebarProps) {
+  const { songs, setSongs, folderPath, setFolderPath } = useSongContext();
+  const handleFolderSelection = async () => {
+    const path = window.prompt('Enter the folder path:');
+    if (!path) return;
+    console.log(path)
+    console.log(process.env.NEXT_PUBLIC_BACKEND_URL)
+    setFolderPath(path);
+
+    try {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/select-folder`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ folder_path: path }),
+      });
+
+      const data = await response.json();
+      if (data.error) {
+        alert(data.error);
+      } else {
+        setSongs(data.files);
+      }
+    } catch (error) {
+      console.error("Error selecting folder:", error);
+    }
+  };
+
+
   return (
     <div className={cn("pb-12 w-60 bg-black", className)}>
       <div className="space-y-4 py-4">
@@ -25,7 +53,7 @@ export function Sidebar({ className }: SidebarProps) {
         <div className="px-3 py-2">
           <Heading className="mb-2 px-4">Carpetas</Heading>
           <div className="space-y-1">
-            <Button variant="ghost" className="w-full justify-start">
+            <Button variant="ghost" className="w-full justify-start" onClick={handleFolderSelection}>
               <FolderPlus className="mr-2 h-4 w-4" />
               Agregar Ruta
             </Button>

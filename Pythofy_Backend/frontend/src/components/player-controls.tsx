@@ -1,7 +1,8 @@
 import { Shuffle, SkipBack, Play, Pause, SkipForward, Repeat, Volume2 } from 'lucide-react'
 import { Button } from "@/components/ui/button"
 import { Slider } from "@/components/ui/slider"
-import React from 'react'
+import React, { useEffect } from 'react'
+import { useSongContext } from '@/components/providers/songcontext'
 
 interface PlayerControlsProps {
   playerData: {
@@ -18,9 +19,22 @@ interface PlayerControlsProps {
   }
 }
 
-export function PlayerControls({ playerData }: PlayerControlsProps) {
-  const { currentSong, isPlaying, currentTime, duration, volume } = playerData;
+export function PlayerControls() {
+  const { currentSong, setCurrentSong, progress, setProgress, isPlaying, setIsPlaying } = useSongContext();
 
+
+  useEffect(() => {
+      const interval = setInterval(async () => {
+        const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/progress`);
+        const data = await response.json();
+        setProgress((prevProgress) => ({
+          currentTime: data.current_time,
+          duration: data.duration,
+        }));
+      }, 1000);
+  
+      return () => clearInterval(interval);
+    }, []);
   const formatTime = (time: number) => {
     const minutes = Math.floor(time / 60);
     const seconds = Math.floor(time % 60);
@@ -32,13 +46,13 @@ export function PlayerControls({ playerData }: PlayerControlsProps) {
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
           <img
-            src={currentSong.cover}
-            alt={`${currentSong.title} album cover`}
+            src="./placeholder.svg"
+            alt={`${currentSong} album cover`}
             className="h-14 w-14 rounded"
           />
           <div>
-            <h3 className="font-medium">{currentSong.title}</h3>
-            <p className="text-sm text-zinc-400">{currentSong.artist}</p>
+            <h3 className="font-medium">{currentSong}</h3>
+            <p className="text-sm text-zinc-400">Unknown Artist</p>
           </div>
         </div>
         <div className="flex flex-col items-center gap-2">
@@ -60,20 +74,20 @@ export function PlayerControls({ playerData }: PlayerControlsProps) {
             </Button>
           </div>
           <div className="flex items-center gap-2 w-96">
-            <span className="text-xs text-zinc-400">{formatTime(currentTime)}</span>
+            <span className="text-xs text-zinc-400">{formatTime(progress.currentTime)}</span>
             <Slider
-              value={[currentTime]}
-              max={duration}
+              value={[progress.currentTime]}
+              max={progress.duration}
               step={1}
               className="cursor-pointer"
             />
-            <span className="text-xs text-zinc-400">{formatTime(duration)}</span>
+            <span className="text-xs text-zinc-400">{formatTime(progress.duration)}</span>
           </div>
         </div>
         <div className="flex items-center gap-2 w-32">
           <Volume2 className="h-5 w-5" />
           <Slider
-            value={[volume]}
+            value={[]}
             max={100}
             step={1}
             className="cursor-pointer"
