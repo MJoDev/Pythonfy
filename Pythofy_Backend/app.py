@@ -28,5 +28,5 @@ if __name__ == "__main__":
     flask_thread.daemon = True
     flask_thread.start()
 
-    webview.create_window("Offline Spotify", "http://localhost:5000", width=1200, height=800)
-    webview.start()
+    webview.create_window("Pythonfy", "http://localhost:5000", width=1200, height=800)
+    webview.start(debug=True)

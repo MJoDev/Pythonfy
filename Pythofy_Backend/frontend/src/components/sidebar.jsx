@@ -8,6 +8,7 @@ import { useSongContext } from '@/components/providers/songcontext'
 export function Sidebar({ className }) {
   const { songs, setSongs, folderPath, setFolderPath } = useSongContext();
   const fileInputRef = useRef(null);
+
   const handleFolderSelection = async (event) => {
     const path = window.prompt('Enter the folder path:');
     if (!path) return;
@@ -31,11 +32,7 @@ export function Sidebar({ className }) {
     }
   };
 
-  const triggerFileInput = () => {
-    if (fileInputRef.current) {
-      fileInputRef.current.click(); // Dispara el clic en el input invisible
-    }
-  };
+  
 
   return (
     <div className={cn("pb-12 w-60 min-h-screen bg-black fixed", className)}>
@@ -56,16 +53,8 @@ export function Sidebar({ className }) {
         <div className="px-3 py-2">
           <Heading className="mb-2 px-4">Carpetas</Heading>
           <div className="space-y-1">
-            <Button variant="ghost" className="w-full justify-start" onClick={triggerFileInput}>
-            <input
-                  type="file"
-                  ref={fileInputRef}
-                  onChange={handleFolderSelection}
-                  style={{ display: 'none' }} // Lo ocultamos visualmente
-                  onClick={(e) => e.stopPropagation()} // Previene la propagación del click al body
-                  // Cast a cualquier HTMLInputElement que permita webkitdirectory
-                  webkitdirectory = "true"
-                />
+            <Button variant="ghost" className="w-full justify-start" onClick={handleFolderSelection}>
+            
 
               <FolderPlus className="mr-2 h-4 w-4" />
               Agregar Ruta

@@ -1,7 +1,7 @@
 import { Shuffle, SkipBack, Play, Pause, SkipForward, Repeat, Volume2 } from 'lucide-react'
 import { Button } from "@/components/ui/button"
 import { Slider } from "@/components/ui/slider"
-import React, { useEffect } from 'react'
+import React, { useEffect, useState } from 'react'
 import { useSongContext } from '@/components/providers/songcontext'
 
 interface PlayerControlsProps {
@@ -21,7 +21,7 @@ interface PlayerControlsProps {
 
 export function PlayerControls() {
   const { currentSong, setCurrentSong, progress, setProgress, isPlaying, setIsPlaying } = useSongContext();
-
+  const [volume, setVolume] = useState(1);
   const handlePause = async () => {
     await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/pause`, { method: 'POST' });
     setIsPlaying(false);
@@ -51,6 +51,50 @@ export function PlayerControls() {
     const seconds = Math.floor(time % 60);
     return `${minutes}:${seconds.toString().padStart(2, '0')}`;
   };
+
+  const handleSeek = async (time) => {
+    try {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/set-time`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ time: time }),
+      });
+      const data = await response.json();
+  
+      if (response.ok) {
+        if (data.current_time !== undefined) {
+          setProgress({ ...progress, currentTime: data.current_time });
+        }
+      } else {
+        console.error(`Error: ${data.error}`);
+      }
+    } catch (error) {
+      console.error("Failed to seek:", error);
+    }
+  };
+
+  const handleVolumeChange = async (newVolume) => {
+    setVolume(newVolume);
+    console.log(newVolume)
+    try {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/set-volume`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ volume: newVolume }),
+      });
+      const data = await response.json();
+  
+      if (response.ok) {
+        if (data.volume !== undefined) {
+          setProgress({ ...progress, volume: data.volume });
+        }
+      } else {
+        console.error(`Error: ${data.error}`);
+      }
+    } catch (error) {
+      console.error("Failed to change volume:", error);
+    }
+  }
 
   return (
     <div className="fixed bottom-0 left-0 right-0 bg-zinc-900 border-t border-zinc-800 p-4">
@@ -96,21 +140,23 @@ export function PlayerControls() {
           <div className="flex items-center gap-2 w-96">
             <span className="text-xs text-zinc-400">{formatTime(progress.currentTime)}</span>
             <Slider
-              value={[Math.floor(progress.currentTime)]}
-              max={Math.floor(progress.duration)}
-              step={1}
-              className="cursor-pointer"
-            />
+                value={[Math.floor(progress.currentTime)]}
+                max={Math.floor(progress.duration)}
+                step={1}
+                className="cursor-pointer"
+                onValueChange={(value) => handleSeek(value[0])}
+              />
             <span className="text-xs text-zinc-400">{formatTime(progress.duration)}</span>
           </div>
         </div>
         <div className="flex items-center gap-2 w-32">
           <Volume2 className="h-5 w-5" />
           <Slider
-            value={[100]}
-            max={100}
-            step={1}
+            value={[volume]}
+            max={1}
+            step={0.10}
             className="cursor-pointer"
+            onValueChange={(value) => handleVolumeChange(value[0])}
           />
         </div>
       </div>

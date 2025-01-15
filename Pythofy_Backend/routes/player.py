@@ -1,5 +1,5 @@
 from flask import Blueprint, request, jsonify
-from utils import play_song, pause_song, resume_song, get_progress
+from utils import play_song, pause_song, resume_song, get_progress, set_time, set_volume
 import os
 from mutagen import File
 from mutagen.id3 import ID3, APIC
@@ -25,6 +25,14 @@ def resume():
 @player_bp.route("/progress", methods=["GET"])
 def progress():
     return jsonify(get_progress())
+
+@player_bp.route("/set-time", methods=["POST"])
+def time():
+    return jsonify(set_time())
+
+@player_bp.route("/set-volume", methods=["POST"])
+def volume():
+    return set_volume()
 
 @player_bp.route('/select-folder', methods=['POST'])
 def select_folder():
