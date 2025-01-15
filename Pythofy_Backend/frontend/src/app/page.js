@@ -7,24 +7,20 @@ import { PlayerControls } from "@/components/player-controls";
 import { useSongContext } from '@/components/providers/songcontext';
 
 const FolderSelector = () => {
-  const {songs} = useSongContext();
-  const [searchTerm, setSearchTerm] = useState("");
   
-  const filteredSongs = searchTerm
-    ? songs.filter((song) =>
-        song.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        song.artist.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        song.album.toLowerCase().includes(searchTerm.toLowerCase())
-      )
-    : songs; // Si searchTerm está vacío, devolver todas las canciones
+  const [searchTerm, setSearchTerm] = useState("");
   
   return (
     <div className="min-h-screen bg-zinc-900 text-white">
           <div className="flex">
-            <Sidebar />
+             <Sidebar />
             <div className="flex-1 ml-60">
-              <SearchBar searchTerm={searchTerm} setSearchTerm={setSearchTerm} />
-              <LibraryTable filteredSongs={filteredSongs}/>
+            {
+              /* SearchBar Implementar en futura
+                <SearchBar searchTerm={searchTerm} setSearchTerm={setSearchTerm} />
+              */
+            }
+              <LibraryTable/>
             </div>
           </div>
           <PlayerControls />

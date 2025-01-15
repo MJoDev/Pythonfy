@@ -27,6 +27,9 @@ export function Sidebar({ className }) {
       } else {
         setSongs(data.files);
         setShuffledSongs([...data.files].sort(() => Math.random() - 0.5));
+        const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/folders`);
+        const folderData = await response.json();
+        setFolders(folderData);
       }
     } catch (error) {
       console.error("Error selecting folder:", error);
