@@ -12,8 +12,8 @@ import { useSongContext } from '@/components/providers/songcontext';
 import { Play } from "lucide-react";
 
 
-export function LibraryTable() {
-  const { songs, setCurrentSong, setProgress, setIsPlaying, folderPath } = useSongContext();
+export function LibraryTable({filteredSongs}) {
+  const { setCurrentSong, setProgress, setIsPlaying, folderPath } = useSongContext();
 
   const handlePlaySong = async (song) => {
     setCurrentSong(song);
@@ -31,8 +31,8 @@ export function LibraryTable() {
 
 
   return (
-    <div className="p-6">
-      <Heading size="xl" className="mb-4">Tu Biblioteca</Heading>
+    <div className="p-6 mb-">
+      <Heading size="xl" className="mb-4">LIBRERIA</Heading>
       <Table>
         <TableHeader>
           <TableRow>
@@ -45,7 +45,7 @@ export function LibraryTable() {
           </TableRow>
         </TableHeader>
         <TableBody>
-          {songs.map((song, index) => (
+          {filteredSongs.map((song, index) => (
             <TableRow key={index}>
               <TableCell>{index + 1}</TableCell>
               <TableCell><button>

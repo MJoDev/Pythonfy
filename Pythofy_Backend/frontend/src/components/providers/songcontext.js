@@ -9,9 +9,11 @@ export const SongProvider = ({ children }) => {
   const [progress, setProgress] = useState({ currentTime: 0, duration: 0 });
   const [isPlaying, setIsPlaying] = useState(false);
   const [folderPath, setFolderPath] = useState([]);
+  const [ shuffledSongs, setShuffledSongs ] = useState([]);
+  const [folders, setFolders] = useState([]);
 
   return (
-    <SongContext.Provider value={{ songs, setSongs, currentSong, setCurrentSong, progress, setProgress, isPlaying, setIsPlaying, folderPath, setFolderPath }}>
+    <SongContext.Provider value={{ songs, setSongs, currentSong, setCurrentSong, progress, setProgress, isPlaying, setIsPlaying, folderPath, setFolderPath, setShuffledSongs, shuffledSongs, folders, setFolders }}>
       {children}
     </SongContext.Provider>
   );

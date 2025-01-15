@@ -6,6 +6,7 @@ from mutagen.id3 import ID3, APIC
 from mutagen.flac import Picture
 import base64
 import eyed3
+import sqlite3
 
 player_bp = Blueprint("player", __name__)
 SUPPORTED_AUDIO_FORMATS = ('.mp3', '.flac', '.wav', '.aac', '.ogg', '.m4a')
@@ -42,6 +43,9 @@ def select_folder():
     if not folder_path:
         return jsonify({'error': 'No folder path provided'}), 400
 
+    if not os.path.isdir(folder_path):
+        return jsonify({'error': 'Invalid folder path'}), 400
+
     try:
         files = os.listdir(folder_path)
         audio_files = [file for file in files if file.lower().endswith(SUPPORTED_AUDIO_FORMATS)]
@@ -53,34 +57,48 @@ def select_folder():
                 audio = eyed3.load(file_path)
                 metadata = {
                     'filename': audio_file,
-                    'title': audio.tag.title if audio.tag.title else os.path.splitext(audio_file)[0],
-                    'artist': audio.tag.artist if audio.tag.artist else 'Unknown Artist',
-                    'album': audio.tag.album if audio.tag.album else 'Unknown Album',
+                    'title': audio.tag.title if audio.tag and audio.tag.title else os.path.splitext(audio_file)[0],
+                    'artist': audio.tag.artist if audio.tag and audio.tag.artist else 'Unknown Artist',
+                    'album': audio.tag.album if audio.tag and audio.tag.album else 'Unknown Album',
                 }
 
                 # Extraer duración
                 metadata['duration'] = round(audio.info.time_secs, 2) if audio.info else None
 
-                # Buscar portada embebida en el archivo MP3
+                # Buscar portada embebida
                 cover_data = None
-                for tag in audio.tag.frame_set:
-                    frame = audio.tag.frame_set[tag]
-                    for item in frame:
-                        if isinstance(item, eyed3.id3.frames.ImageFrame):  # Verificar si el item es una imagen
-                            if item.mime_type == 'image/jpeg':  # Verificamos el tipo MIME (o usar otro tipo si es necesario)
-                                cover_data = item.image_data
-                                break
-                    if cover_data:
-                        break  # Salir si ya encontramos la portada
+                if audio.tag:
+                    for tag in audio.tag.frame_set:
+                        frame = audio.tag.frame_set[tag]
+                        for item in frame:
+                            if isinstance(item, eyed3.id3.frames.ImageFrame):
+                                if item.mime_type == 'image/jpeg':  # Verificar si es una imagen JPEG
+                                    cover_data = item.image_data
+                                    break
+                        if cover_data:
+                            break
 
                 metadata['cover'] = f"data:image/jpeg;base64,{base64.b64encode(cover_data).decode('utf-8')}" if cover_data else None
-                if not cover_data:
-                    print(f"No se encontró portada en {audio_file}")
 
                 files_info.append(metadata)
             except Exception as e:
                 files_info.append({'filename': audio_file, 'error': str(e)})
 
+        # Guardar carpeta en la base de datos
+        with sqlite3.connect("folders.db") as conn:
+            conn.execute("INSERT OR IGNORE INTO folders (folder_path) VALUES (?)", (folder_path,))
+            conn.commit()
+
         return jsonify({'files': files_info, 'folder': folder_path})
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@player_bp.route('/folders', methods=['GET'])
+def get_folders():
+    try:
+        with sqlite3.connect("folders.db") as conn:
+            cursor = conn.execute("SELECT id, folder_path FROM folders")
+            folders = [{"id": row[0], "path": row[1]} for row in cursor.fetchall()]
+        return jsonify(folders)
     except Exception as e:
         return jsonify({'error': str(e)}), 500
